@@ -1,8 +1,6 @@
 ﻿using System;
-using Npgsql;
 using OR_Mapper.App.ObjectClasses;
 using OR_Mapper.Framework;
-using OR_Mapper.Framework.Database;
 
 namespace OR_Mapper.App
 {
@@ -10,10 +8,8 @@ namespace OR_Mapper.App
     {
         static void Main(string[] args)
         {
-            var teacher = new Person();
-            teacher.Name = "Sammy";
-
-            var model = new Model(typeof(Person));
+            
+            var model = new Model(typeof(Teacher));
             Console.WriteLine();
 
 
