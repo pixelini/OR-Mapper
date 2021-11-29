@@ -1,38 +1,32 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 
 namespace OR_Mapper.Framework
 {
     public class Field
     {
-        // Class information
-        public Model Model { get; set; }
-        public MemberInfo Member { get; set; }
+        public PropertyInfo Member { get; set; }
 
-        public Type Type
-        {
-            get
-            {
-                if (Member is PropertyInfo)
-                {
-                    return ((PropertyInfo)Member).PropertyType;
-                }
+        public Type Type => Member.PropertyType;
 
-                throw new NotSupportedException();
-            }
-        }
-        
-        
+
         // Database information
         public string ColumnName { get; set; }
         public Type ColumnType { get; set; }
         public bool IsPrimaryKey { get; set; }
-        public bool IsForeignkey { get; set; }
+        public bool IsForeignKey { get; set; }
 
 
-        public Field(Model model)
+        public Field(PropertyInfo propertyInfo)
         {
-            Model = model;
+            Member = propertyInfo;
+            ColumnName = propertyInfo.Name;
+            ColumnType = propertyInfo.PropertyType;
+            
+            var keyAttributes = propertyInfo.GetCustomAttributes(typeof(KeyAttribute)).ToList();
+            IsPrimaryKey = keyAttributes.Any();
         }
         
     }
