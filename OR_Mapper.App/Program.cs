@@ -8,21 +8,15 @@ namespace OR_Mapper.App
     {
         static void Main(string[] args)
         {
-            
+            /*var myTeacher = new Teacher();
+            myTeacher.FirstName = "Fred";
+            myTeacher.Name = "Keks";
+            myTeacher.Salary = 1000;*/
+     
             var model = new Model(typeof(Teacher));
+
             Console.WriteLine();
-
-
-            /*// config
-            Db.Connection = new NpgsqlConnection("Host=localhost;Username=postgres;Password=postgres;Database=postgres");
-            Db.Connection.Open();
-            //var result = Db.Query("INSERT INTO swe3_orm.person (id, name) VALUES (1, 'hans')");
-            var result = Db.Fetch("select * from swe3_orm.person");
-
-            Console.WriteLine(result);*/
-
-
-
+            
         }
     }
 }

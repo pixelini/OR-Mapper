@@ -109,11 +109,11 @@ namespace OR_Mapper.Framework
             } 
             else if (isManyTo && !isToManyAtCorrespondingType)
             {
-                return new ExternalField(GetModel(correspondingPropertyType), Relation.ManyToOne);
+                return new ExternalField(GetModel(correspondingPropertyType), Relation.OneToMany);
             } 
             else if (!isManyTo && isToManyAtCorrespondingType)
             {
-                return new ExternalField(GetModel(correspondingPropertyType), Relation.OneToMany);
+                return new ExternalField(GetModel(correspondingPropertyType), Relation.ManyToOne);
             }
             else
             {
