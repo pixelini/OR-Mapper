@@ -28,7 +28,7 @@ namespace OR_Mapper.Framework.Database
             return select;
         }
 
-        private string buildSelectCommand()
+        private string BuildSelectCommand()
         {
             var command = "";
             if (_select.Count == 0)
@@ -54,9 +54,9 @@ namespace OR_Mapper.Framework.Database
             return _commandString;
         }
 
-        public string get()
+        public string Get()
         {
-            return buildSelectCommand();
+            return BuildSelectCommand();
         }
     }
 }

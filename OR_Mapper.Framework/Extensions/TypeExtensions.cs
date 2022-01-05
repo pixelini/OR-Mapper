@@ -43,10 +43,12 @@ namespace OR_Mapper.Framework.Extensions
 
         public static PropertyInfo? GetCorrespondingPropertyOfType(this Type type, Type correspondingType)
         {
-            return type.GetProperties().FirstOrDefault(x => 
+            var test = type.GetProperties().FirstOrDefault(x => 
                 x.PropertyType == correspondingType || 
                 x.PropertyType.IsList() && 
                 x.PropertyType.GetGenericArguments().First() == correspondingType);
+
+            return test;
         }
         
     }

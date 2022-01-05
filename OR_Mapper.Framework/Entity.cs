@@ -1,4 +1,5 @@
 ﻿using System;
+using OR_Mapper.Framework.Database;
 
 namespace OR_Mapper.Framework
 {
@@ -9,11 +10,10 @@ namespace OR_Mapper.Framework
             var type = GetType();
             Console.WriteLine();
         }
+        
         public void Save()
         {
-            // Saves data
-            //Db.Insert()
-
+            Db.Save(this);
         }
     }
 }

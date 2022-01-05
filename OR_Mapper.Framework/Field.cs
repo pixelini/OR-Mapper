@@ -7,29 +7,51 @@ namespace OR_Mapper.Framework
 {
     public class Field
     {
-        public PropertyInfo Member { get; set; }
-
-        public Type Type => Member.PropertyType;
-
-
+        public PropertyInfo PropertyInfo { get; set; }
+        
         // Database information
         public string ColumnName { get; set; }
         public Type ColumnType { get; set; }
         public bool IsPrimaryKey { get; set; }
         public bool IsForeignKey { get; set; }
-        
-        
+        public bool IsDiscriminator { get; set; }
+
         public Field(PropertyInfo propertyInfo, Model? model)
         {
             var prefix = model is null ? string.Empty : $"{model.Member.Name}_";
-            Member = propertyInfo;
+            PropertyInfo = propertyInfo;
             ColumnName = prefix + propertyInfo.Name;
             ColumnType = propertyInfo.PropertyType;
             
             var keyAttributes = propertyInfo.GetCustomAttributes(typeof(KeyAttribute)).ToList();
             IsPrimaryKey = keyAttributes.Any();
-
         }
-        
+
+        public Field(string name, Type type, bool isPrimaryKey = false, bool isDiscriminator = false, bool isForeignKey = false)
+        {
+            ColumnName = name;
+            ColumnType = type;
+            IsPrimaryKey = isPrimaryKey;
+            IsForeignKey = isForeignKey;
+            IsDiscriminator = isDiscriminator;
+        }
+
+        public object? GetValue(object obj)
+        {
+            var type = obj.GetType();
+            
+            if (IsDiscriminator)
+            {
+                return type.Name;
+            }
+
+            return type.GetProperties().FirstOrDefault(x => x.Name == PropertyInfo.Name)?.GetValue(obj);
+        }
+
+        public void SetValue(object obj, object value)
+        {
+            var type = obj.GetType();
+            type.GetProperties().FirstOrDefault(x => x.Name == PropertyInfo.Name)?.SetValue(obj, value);
+        }
     }
 }
