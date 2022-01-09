@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -81,70 +82,73 @@ namespace OR_Mapper.Framework.Database
             string sql = DbSchema is not null ? $"INSERT INTO {DbSchema}.{model.TableName} (" : $"INSERT INTO {model.TableName} (";
 
             var columnNames = model.Fields.Select(x => x.ColumnName);
-            var pkColumnName = model.Fields.First(x => x.IsPrimaryKey).ColumnName;
             sql += string.Join(',', columnNames);
             sql += ") VALUES (";
             var cmd = conn.CreateCommand();
 
-            var counter = 0;
             var modelFieldsWithoutFk = model.Fields.Where(x => !x.IsForeignKey).ToList();
+            var insertParameters = new List<string>();
+            var parameterCount = 0;
             
-            // Internal fields
+            // Build parameters for internal fields
             foreach (var fields in modelFieldsWithoutFk)
             {
-                sql += "@p" + counter;
+                string paramName = "@p" + parameterCount;
+                insertParameters.Add(paramName);
                 
-                if (counter < modelFieldsWithoutFk.Count-1)
+                var paramValue = fields.GetValue(entity) ?? DBNull.Value;
+                
+                if (fields.ColumnType.IsEnum && paramValue != DBNull.Value)
                 {
-                    sql += ",";
-                    counter++;
+                    paramValue = (int) paramValue;
                 }
                 
-                cmd.AddParameter("@p" + counter, fields.GetValue(entity) ?? DBNull.Value);
+                cmd.AddParameter(paramName, paramValue);
+                parameterCount++;
             }
 
             var modelFieldsWithFk = model.Fields.Where(x => x.IsForeignKey).ToList();
             
-            // One to one and many to one (fk)
-            var upperBoundary = modelFieldsWithFk.Count + counter - 1;
+            // Build parameters for foreign keys
             foreach (var fields in modelFieldsWithFk)
             {
-                sql += "@p" + counter;
-                
-                if (counter < upperBoundary)
-                {
-                    sql += ",";
-                    counter++;
-                }
+                string paramName = $"@p{parameterCount}";
+                insertParameters.Add(paramName);
 
                 var foreignKey = model.ForeignKeys.First(x => x.LocalColumn == fields);
                 var correspondingField = model.ExternalFields.First(x => x.Model == foreignKey.ForeignTable);
-                
+		
                 var externalEntity = correspondingField.GetValue(entity);
                 var pk = correspondingField.Model.PrimaryKey.GetValue(externalEntity);
-                cmd.AddParameter("@p" + counter, pk ?? DBNull.Value);
-                
+                cmd.AddParameter(paramName, pk ?? DBNull.Value);
+                parameterCount++;
             }
             
-            sql += $") ON CONFLICT ({pkColumnName}) DO UPDATE SET ";
-            counter = 0;
+            sql += string.Join(',', insertParameters);
+            sql += ") ";
+	
+            // Update row on duplicate primary key
+            sql += $"ON CONFLICT ({model.PrimaryKey.ColumnName}) DO UPDATE SET ";
+	
+            parameterCount = 0;
+            var updateParameters = new List<string>();
+            
             foreach (var column in columnNames)
             {
-                sql += $"{column} = @p{counter}";
-                if (counter < upperBoundary)
-                {
-                    sql += ", ";
-                    counter++;
-                }
-                
+                string paramName = $"{column} = @p{parameterCount}";
+                updateParameters.Add(paramName);
+                parameterCount++;
             }
-
-            sql += $" RETURNING {pkColumnName}";
-
-            cmd.CommandText = sql;
             
+            sql += string.Join(',', updateParameters);
+
+            // Return primary key
+            sql += $" RETURNING {model.PrimaryKey.ColumnName}";
+
+            // Execute command
             try
             {
+                cmd.CommandText = sql;
                 var success = cmd.ExecuteScalar();
                 Console.WriteLine();
             }

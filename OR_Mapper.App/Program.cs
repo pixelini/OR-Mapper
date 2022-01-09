@@ -20,29 +20,30 @@ namespace OR_Mapper.App
             var st1 = new Student();
             st1.Id = 1;
             st1.Name = "Stefan";
-            
 
             // Generate new object
             var myTeacher = new Teacher();
-            myTeacher.Id = 1;
-            myTeacher.FirstName = "Fred";
-            myTeacher.Name = "Keks";
+            myTeacher.Id = 101;
+            myTeacher.Name = "Max";
+            myTeacher.FirstName = "Maier";
             myTeacher.Salary = 1000;
-            myTeacher.Gender = Gender.Female;
-
+            myTeacher.Gender = Gender.Male;
+            myTeacher.BirthDate = new DateTime(2000, 1, 1);
+            myTeacher.HireDate = new DateTime(2022, 1, 1);
+            
             var myClass = new Class
             {
-                Id = 2,
+                Id = 1,
                 Name = "myClass",
                 Teacher = myTeacher
             };
             
             // Save Object
+            myTeacher.Save();
             myClass.Save();
             //myClass.Delete();
-            //myTeacher.Save();
-
-
+            
+            
             //var model = new Model(typeof(Student));
 
             Console.WriteLine();
