@@ -15,5 +15,10 @@ namespace OR_Mapper.Framework
         {
             Db.Save(this);
         }
+        
+        public void Delete()
+        {
+            Db.Delete(this);
+        }
     }
 }

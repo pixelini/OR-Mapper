@@ -3,6 +3,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using Npgsql;
+using Npgsql.Replication.TestDecoding;
 using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework.Database
@@ -10,6 +11,8 @@ namespace OR_Mapper.Framework.Database
     public static class Db
     {
         private static string _connectionString;
+
+        public static string DbSchema { get; set; }
 
         public static IDbConnection Connection { get; set; }
         
@@ -75,8 +78,10 @@ namespace OR_Mapper.Framework.Database
             var type = entity.GetType();
             var model = new Model(type);
 
-            string sql = $"INSERT INTO {model.TableName} (";
+            string sql = DbSchema is not null ? $"INSERT INTO {DbSchema}.{model.TableName} (" : $"INSERT INTO {model.TableName} (";
+
             var columnNames = model.Fields.Select(x => x.ColumnName);
+            var pkColumnName = model.Fields.First(x => x.IsPrimaryKey).ColumnName;
             sql += string.Join(',', columnNames);
             sql += ") VALUES (";
             var cmd = conn.CreateCommand();
@@ -92,10 +97,10 @@ namespace OR_Mapper.Framework.Database
                 if (counter < modelFieldsWithoutFk.Count-1)
                 {
                     sql += ",";
+                    counter++;
                 }
                 
                 cmd.AddParameter("@p" + counter, fields.GetValue(entity) ?? DBNull.Value);
-                counter++;
             }
 
             var modelFieldsWithFk = model.Fields.Where(x => x.IsForeignKey).ToList();
@@ -109,6 +114,7 @@ namespace OR_Mapper.Framework.Database
                 if (counter < upperBoundary)
                 {
                     sql += ",";
+                    counter++;
                 }
 
                 var foreignKey = model.ForeignKeys.First(x => x.LocalColumn == fields);
@@ -117,11 +123,66 @@ namespace OR_Mapper.Framework.Database
                 var externalEntity = correspondingField.GetValue(entity);
                 var pk = correspondingField.Model.PrimaryKey.GetValue(externalEntity);
                 cmd.AddParameter("@p" + counter, pk ?? DBNull.Value);
-                counter++;
+                
+            }
+            
+            sql += $") ON CONFLICT ({pkColumnName}) DO UPDATE SET ";
+            counter = 0;
+            foreach (var column in columnNames)
+            {
+                sql += $"{column} = @p{counter}";
+                if (counter < upperBoundary)
+                {
+                    sql += ", ";
+                    counter++;
+                }
+                
             }
 
-            sql += ")";
+            sql += $" RETURNING {pkColumnName}";
+
             cmd.CommandText = sql;
+            
+            try
+            {
+                var success = cmd.ExecuteScalar();
+                Console.WriteLine();
+            }
+            catch (NpgsqlException ex)
+            {
+                //TODO: throw DbException;
+            }
+
+            conn.Close();
+        }
+
+        public static void Delete(Entity entity)
+        {
+            var conn = Connect();
+            var type = entity.GetType();
+            var model = new Model(type);
+
+            string sql = DbSchema is not null ? $"DELETE FROM {DbSchema}.{model.TableName} WHERE id=@id" : $"DELETE FROM {model.TableName} WHERE id=@id";
+            
+            var cmd = conn.CreateCommand();
+            
+            var pk = model.Fields.First(x => x.IsPrimaryKey);
+            var pkValue = pk.GetValue(entity);
+            cmd.AddParameter("@id", pkValue);
+            
+            cmd.CommandText = sql;
+
+            try
+            {
+                var success = cmd.ExecuteScalar();
+                Console.WriteLine();
+            }
+            catch (NpgsqlException ex)
+            {
+                //TODO: throw DbException;
+            }
+
+            conn.Close();
         }
 
         public static IDbConnection Connect()

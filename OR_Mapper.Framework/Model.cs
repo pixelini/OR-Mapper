@@ -103,7 +103,8 @@ namespace OR_Mapper.Framework
                 if (orderOfTheUniverse && externalField.Relation is Relation.ManyToOne or Relation.OneToOne)
                 {
                     var foreignPk = externalModel.PrimaryKey;
-                    var fkName = $"fk_{externalModel.TableName}_{foreignPk.ColumnName}";
+                    var isChildClass = externalModel.HasParentEntity(externalField.GetType());
+                    var fkName = isChildClass ? $"{externalProperty.Name}_id_fk" : $"{externalModel.TableName}_id_fk";
                     var fkField = new Field(fkName, foreignPk.ColumnType, isForeignKey: true);
                     var fk = new ForeignKey(fkField, externalModel.PrimaryKey, externalModel);
                     
@@ -186,22 +187,6 @@ namespace OR_Mapper.Framework
             }
      
             return model;
-        }
-    }
-
-    public class ForeignKey
-    {
-        public Field LocalColumn { get; set; }
-        
-        public Field ForeignColumn { get; set; }
-
-        public Model ForeignTable { get; set; }
-
-        public ForeignKey(Field localColumn, Field foreignColumn, Model foreignTable)
-        {
-            LocalColumn = localColumn;
-            ForeignColumn = foreignColumn;
-            ForeignTable = foreignTable;
         }
     }
 }
