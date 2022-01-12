@@ -11,32 +11,23 @@ namespace OR_Mapper.Framework.Database
 {
     public static class Db
     {
-        private static string _connectionString;
+        public static string? ConnectionString;
 
-        public static string DbSchema { get; set; }
+        public static string? DbSchema { get; set; }
 
-        public static IDbConnection Connection { get; set; }
-        
         public static object? Insert(string sql)
         {
             var result = Query(sql);
             return result ?? null;
         }
 
-        public static IDbConnection GetInstance()
-        {
-            if (Connection is null)
-            {
-                return new NpgsqlConnection(_connectionString);
-            }
-
-            return Connection;
-        }
+        public static IDbConnection GetConnection() => new NpgsqlConnection(ConnectionString);
 
         // sends query to database which executes it
         public static IDataReader Query(string sql)
         {
-            using var cmd = Connection.CreateCommand();
+            var connection = Connect();
+            using var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.Prepare();
             
@@ -79,7 +70,7 @@ namespace OR_Mapper.Framework.Database
             var type = entity.GetType();
             var model = new Model(type);
 
-            string sql = DbSchema is not null ? $"INSERT INTO {DbSchema}.{model.TableName} (" : $"INSERT INTO {model.TableName} (";
+            string sql = $"INSERT INTO {GetTableName(model.TableName)} (";
 
             var columnNames = model.Fields.Select(x => x.ColumnName);
             sql += string.Join(',', columnNames);
@@ -166,7 +157,7 @@ namespace OR_Mapper.Framework.Database
             var type = entity.GetType();
             var model = new Model(type);
 
-            string sql = DbSchema is not null ? $"DELETE FROM {DbSchema}.{model.TableName} WHERE id=@id" : $"DELETE FROM {model.TableName} WHERE id=@id";
+            string sql = $"DELETE FROM {GetTableName(model.TableName)} WHERE id=@id";
             
             var cmd = conn.CreateCommand();
             
@@ -189,11 +180,64 @@ namespace OR_Mapper.Framework.Database
             conn.Close();
         }
 
-        public static IDbConnection Connect()
+        public static List<TEntity> GetAll<TEntity>() where TEntity : new()
+        {
+            var model = new Model(typeof(TEntity));
+            var conn = Connect();
+            string sql = $"SELECT * FROM {GetTableName(model.TableName)}";
+
+            var cmd = conn.CreateCommand();
+            
+            // Execute command
+            try
+            {
+                cmd.CommandText = sql;
+                var reader = cmd.ExecuteReader();
+                var loader = new ObjectLoader(reader);
+                var entityList = loader.LoadCollection<TEntity>();
+                conn.Close();
+                return entityList;
+            }
+            catch (NpgsqlException ex)
+            {
+                //TODO: throw DbException;
+            }
+            
+            return null;
+        }
+        
+        public static TEntity? GetById<TEntity>(int id) where TEntity : new()
+        {
+            var model = new Model(typeof(TEntity));
+            var conn = Connect();
+            string sql = $"SELECT * FROM {GetTableName(model.TableName)}";
+            sql += $" WHERE id = {id}";
+
+            var cmd = conn.CreateCommand();
+            
+            // Execute command
+            try
+            {
+                cmd.CommandText = sql;
+                var reader = cmd.ExecuteReader();
+                var loader = new ObjectLoader(reader);
+                var entity = loader.LoadSingle<TEntity>();
+                conn.Close();
+                return entity;
+            }
+            catch (NpgsqlException ex)
+            {
+                //TODO: throw DbException;
+            }
+            
+            return new TEntity();
+        }
+        
+        private static IDbConnection Connect()
         {
             try
             {
-                var conn = GetInstance();
+                var conn = GetConnection();
                 conn.Open();
                 return conn;
             }
@@ -205,5 +249,81 @@ namespace OR_Mapper.Framework.Database
             return null;
         }
         
+        public static void LoadOneToOne(object record, ExternalField field) 
+        {
+            var conn = Connect();
+            
+            // Get foreign information if foreign key is in current table
+            var mainModel = new Model(record.GetType());
+            var foreignModel = field.Model;
+            
+            var columnNames = field.Model.Fields.Select(x => "v." + x.ColumnName);
+            var allColumns = string.Join(',', columnNames);
+            
+            var fk = foreignModel.ForeignKeys.FirstOrDefault(x => x.ForeignTable.Member == mainModel.Member);
+            var joinPredicate = "";
+
+            // foreign key is in other table
+            if (fk is null)
+            {
+                fk = mainModel.ForeignKeys.First(x => x.ForeignTable.Member == foreignModel.Member);
+                joinPredicate = $"v.{foreignModel.PrimaryKey.ColumnName} = {GetTableName(mainModel.TableName)}.{fk.LocalColumn.ColumnName}";
+            }
+            // foreign key is in the current table
+            else
+            {
+                joinPredicate = $"{GetTableName(mainModel.TableName)}.{mainModel.PrimaryKey.ColumnName} = v.{fk.LocalColumn.ColumnName}";
+            }
+            
+            var sql = "";
+
+            sql += $"SELECT {allColumns} FROM {GetTableName(mainModel.TableName)} " +
+                   $"JOIN {GetTableName(foreignModel.TableName)} v " +
+                   $"ON {joinPredicate} " +
+                   $"WHERE {GetTableName(mainModel.TableName)}.{mainModel.PrimaryKey.ColumnName} = @p0";
+                
+            var cmd = conn.CreateCommand();
+            cmd.AddParameter("@p0", mainModel.PrimaryKey.GetValue(record));
+            
+            // Execute command
+            try
+            {
+                cmd.CommandText = sql;
+                var reader = cmd.ExecuteReader();
+                var loader = new ObjectLoader(reader);
+                var method = typeof(ObjectLoader)
+                    .GetMethod(nameof(ObjectLoader.LoadSingle))?
+                    .MakeGenericMethod(field.Model.Member);
+                var entity = method?.Invoke(loader, new object [] {});
+                conn.Close();
+            }
+            catch (NpgsqlException ex)
+            {
+                //TODO: throw DbException;
+            }
+            
+            throw new NotImplementedException();
+        }
+        
+        public static void LoadManyToMany(object record, ExternalField field)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void LoadManyToOne(object record, ExternalField field)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void LoadOneToMany(object record, ExternalField field)
+        {
+            return;
+        }
+
+        private static string GetTableName(string tableName)
+        {
+            return DbSchema is null ? tableName : $"{DbSchema}.{tableName}";
+        }
+
     }
 }

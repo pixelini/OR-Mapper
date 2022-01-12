@@ -10,5 +10,7 @@ namespace OR_Mapper.App.ObjectClasses
         public DateTime HireDate { get; set; }
 
         public List<Class> Classes { get; private set; } = new List<Class>();
+
+        public Course Course { get; set; }
     }
 }

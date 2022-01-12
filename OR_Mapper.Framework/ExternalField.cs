@@ -28,5 +28,17 @@ namespace OR_Mapper.Framework
 
             return correspondingProperty.GetValue(obj);
         }
+
+        public void SetValue(object obj, object value)
+        {
+            var type = obj.GetType();
+            
+            var correspondingProperty = type
+                .GetProperties()
+                .First(x => 
+                    Model.Member == (x.PropertyType.IsList() ? x.PropertyType.GetGenericArguments().First() : x.PropertyType));
+            
+            correspondingProperty.SetValue(obj, value);
+        }
     }
 }

@@ -38,6 +38,11 @@ namespace OR_Mapper.Framework
 
         public object? GetValue(object obj)
         {
+            if (IsForeignKey)
+            {
+                return default;
+            }
+            
             var type = obj.GetType();
             
             if (IsDiscriminator)
@@ -50,6 +55,11 @@ namespace OR_Mapper.Framework
 
         public void SetValue(object obj, object value)
         {
+            if (IsForeignKey || IsDiscriminator)
+            {
+                return;
+            }
+            
             var type = obj.GetType();
             type.GetProperties().FirstOrDefault(x => x.Name == PropertyInfo.Name)?.SetValue(obj, value);
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Npgsql;
 using OR_Mapper.App.ObjectClasses;
-using OR_Mapper.Framework;
 using OR_Mapper.Framework.Database;
 
 namespace OR_Mapper.App
@@ -12,7 +11,7 @@ namespace OR_Mapper.App
         static void Main(string[] args)
         {
             Db.DbSchema = "swe3_orm";
-            Db.Connection = new NpgsqlConnection("Host=localhost;Username=postgres;Password=postgres;Database=postgres");
+            Db.ConnectionString = "Host=localhost;Username=postgres;Password=postgres;Database=postgres";
 
             //Db.Query("INSERT INTO swe3_orm.person (id, name) VALUES (10, 'seppi')");
 
@@ -33,21 +32,35 @@ namespace OR_Mapper.App
             
             var myClass = new Class
             {
-                Id = 1,
-                Name = "myClass",
+                Id = 2,
+                Name = "mySecondClass",
                 Teacher = myTeacher
             };
+
+            var course = new Course
+            {
+                Id = 1,
+                Name = "Lisi-Course",
+                Teacher = myTeacher,
+                IsActive = true
+            };
+            
+            myTeacher.Save();
+            course.Save();
             
             // Save Object
-            myTeacher.Save();
-            myClass.Save();
+            //myTeacher.Save();
+            //myClass.Save();
             //myClass.Delete();
-            
+
+            //var listOfClasses = Db.GetAll<Class>();
+            var listOfPersons = Db.GetAll<Course>();
+            //var classWithId = Db.GetById<Class>(1);
+     
             
             //var model = new Model(typeof(Student));
-
             Console.WriteLine();
-            
+
         }
     }
 }

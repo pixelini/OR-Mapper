@@ -4,7 +4,7 @@ namespace OR_Mapper.Framework.Extensions
 {
     public static class IDbCommandExtensions
     {
-        public static void AddParameter(this IDbCommand command, string name, object value)
+        public static void AddParameter(this IDbCommand command, string name, object? value)
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = name;
