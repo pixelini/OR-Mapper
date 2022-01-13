@@ -41,12 +41,28 @@ namespace OR_Mapper.Framework.Extensions
             return typeof(IList).IsAssignableFrom(type);
         }
 
+        public static bool IsLazy(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Lazy<>);
+        }
+
+        public static Type GetUnderlyingTypeForLazy(this Type type)
+        {
+            return type.IsLazy() ? type.GetGenericArguments().First() : type;
+        }
+
+        public static Type GetUnderlyingType(this Type type)
+        {
+            type = type.IsLazy() ? type.GetGenericArguments().First() : type;
+            type = type.IsList() ? type.GetGenericArguments().First() : type;
+            return type;
+        }
+
         public static PropertyInfo? GetCorrespondingPropertyOfType(this Type type, Type correspondingType)
         {
-            var test = type.GetProperties().FirstOrDefault(x => 
-                x.PropertyType == correspondingType || 
-                x.PropertyType.IsList() && 
-                x.PropertyType.GetGenericArguments().First() == correspondingType);
+            var test = type
+                .GetProperties()
+                .FirstOrDefault(x => x.PropertyType.GetUnderlyingType() == correspondingType);
 
             return test;
         }

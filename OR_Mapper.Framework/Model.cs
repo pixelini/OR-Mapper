@@ -118,44 +118,40 @@ namespace OR_Mapper.Framework
 
         private ExternalField GetExternalField(PropertyInfo externalProperty)
         {
-            var type = externalProperty.PropertyType;
-            var propertyType = type;
+            // if lazy, find element type of lazy type
+            var type = externalProperty.PropertyType.GetUnderlyingTypeForLazy();
             
-            // if property type is collection, find element type of collection
+            // if type is a collection, find element type of collection
             var isManyTo = type.IsList();
-
-            if (isManyTo)
-            {
-                propertyType = type.GetGenericArguments().First();
-            }
+            type = type.GetUnderlyingType();
 
             // find corresponding property to determine if one-to-many/many-to-one/...
-            var correspondingProperty = propertyType.GetCorrespondingPropertyOfType(Member);
+            var correspondingProperty = type.GetCorrespondingPropertyOfType(Member);
             
             if (correspondingProperty is null)
             {
-                throw new InvalidEntityException($"Please define corresponding property of type {Member.Name} on type {propertyType.Name}");
+                throw new InvalidEntityException($"Please define corresponding property of type {Member.Name} on type {type.Name}");
             }
 
-            var correspondingPropertyType = correspondingProperty.PropertyType;
+            var correspondingPropertyType = correspondingProperty.PropertyType.GetUnderlyingTypeForLazy();
             var isToManyAtCorrespondingType = correspondingPropertyType.IsList();
 
             if (isManyTo && isToManyAtCorrespondingType)
             {
-                return new ExternalField(GetModel(propertyType), Relation.ManyToMany);
+                return new ExternalField(GetModel(type), Relation.ManyToMany);
             } 
             
             if (isManyTo && !isToManyAtCorrespondingType)
             {
-                return new ExternalField(GetModel(propertyType), Relation.OneToMany);
+                return new ExternalField(GetModel(type), Relation.OneToMany);
             } 
             
             if (!isManyTo && isToManyAtCorrespondingType)
             {
-                return new ExternalField(GetModel(propertyType), Relation.ManyToOne);
+                return new ExternalField(GetModel(type), Relation.ManyToOne);
             }
             
-            return new ExternalField(GetModel(propertyType), Relation.OneToOne);
+            return new ExternalField(GetModel(type), Relation.OneToOne);
         }
 
         private bool HasParentEntity(Type type)

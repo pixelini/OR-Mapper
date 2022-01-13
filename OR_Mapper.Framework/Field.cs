@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework
 {
@@ -50,7 +51,10 @@ namespace OR_Mapper.Framework
                 return type.Name;
             }
 
-            return type.GetProperties().FirstOrDefault(x => x.Name == PropertyInfo.Name)?.GetValue(obj);
+            return type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .FirstOrDefault(x => x.Name == PropertyInfo.Name)?
+                .GetValue(obj);
         }
 
         public void SetValue(object obj, object value)

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Npgsql;
 using OR_Mapper.App.ObjectClasses;
+using OR_Mapper.Framework;
 using OR_Mapper.Framework.Database;
 
 namespace OR_Mapper.App
@@ -34,14 +36,14 @@ namespace OR_Mapper.App
             {
                 Id = 2,
                 Name = "mySecondClass",
-                Teacher = myTeacher
+                Teacher = new Lazy<Teacher>(myTeacher)
             };
 
             var course = new Course
             {
                 Id = 1,
                 Name = "Lisi-Course",
-                Teacher = myTeacher,
+                Teacher = new Lazy<Teacher>(),
                 IsActive = true
             };
             
@@ -56,8 +58,7 @@ namespace OR_Mapper.App
             //var listOfClasses = Db.GetAll<Class>();
             var listOfPersons = Db.GetAll<Course>();
             //var classWithId = Db.GetById<Class>(1);
-     
-            
+            var x = listOfPersons.First().Teacher.Value;
             //var model = new Model(typeof(Student));
             Console.WriteLine();
 

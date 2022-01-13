@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
 using Npgsql;
-using Npgsql.Replication.TestDecoding;
+using OR_Mapper.Framework.Caching;
 using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework.Database
@@ -15,57 +14,16 @@ namespace OR_Mapper.Framework.Database
 
         public static string? DbSchema { get; set; }
 
-        public static object? Insert(string sql)
-        {
-            var result = Query(sql);
-            return result ?? null;
-        }
+        public static ICache Cache { get; set; } = new Cache();
 
         public static IDbConnection GetConnection() => new NpgsqlConnection(ConnectionString);
-
-        // sends query to database which executes it
-        public static IDataReader Query(string sql)
-        {
-            var connection = Connect();
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.Prepare();
-            
-            try
-            {
-                var result = cmd.ExecuteReader();
-                return result;
-            }
-            catch (NpgsqlException ex)
-            {
-                Debug.WriteLine("NpgsqlException Error Message ex.Message: " + ex.Message);
-            }
-            
-            return null;
-        }
         
-        public static object Fetch(string sql)
-        {
-            var name = "";
-            
-            var result = Query(sql);
-
-            if (result == null)
-            {
-                // throw exception
-            }
-            
-            while (result.Read())
-            {
-                name = result.GetString(0);
-            }
-
-            return name;
-
-        }
-
         public static void Save(Entity entity)
         {
+            if (!HasChanged(entity))
+            {
+                return;
+            }
             var conn = Connect();
             var type = entity.GetType();
             var model = new Model(type);
@@ -140,8 +98,8 @@ namespace OR_Mapper.Framework.Database
             try
             {
                 cmd.CommandText = sql;
-                var success = cmd.ExecuteScalar();
-                Console.WriteLine();
+                var pk = cmd.ExecuteScalar();
+                Cache.Add(entity);
             }
             catch (NpgsqlException ex)
             {
@@ -149,6 +107,23 @@ namespace OR_Mapper.Framework.Database
             }
 
             conn.Close();
+        }
+
+        private static bool HasChanged(Entity entity)
+        {
+            var type = entity.GetType();
+            var model = new Model(type);
+            var pk = model.PrimaryKey.GetValue(entity);
+
+            // if the primary key is null, the object is definitely not stored in cache
+            // therefore, it should be treated as if it was changed
+            if (pk is null)
+            {
+                return true;
+            }
+            
+            var cachedEntity = Cache.Get(pk, entity.GetType());
+            return cachedEntity.GetHashCode() != entity.GetHashCode();
         }
 
         public static void Delete(Entity entity)
@@ -170,7 +145,7 @@ namespace OR_Mapper.Framework.Database
             try
             {
                 var success = cmd.ExecuteScalar();
-                Console.WriteLine();
+                Cache.Remove(entity);
             }
             catch (NpgsqlException ex)
             {
@@ -180,8 +155,14 @@ namespace OR_Mapper.Framework.Database
             conn.Close();
         }
 
-        public static List<TEntity> GetAll<TEntity>() where TEntity : new()
+        public static List<TEntity> GetAll<TEntity>() where TEntity : class, new()
         {
+            var cache = Cache.GetAll<TEntity>();
+            if (cache.Count > 0)
+            {
+                return cache.ToList();
+            }
+            
             var model = new Model(typeof(TEntity));
             var conn = Connect();
             string sql = $"SELECT * FROM {GetTableName(model.TableName)}";
@@ -196,6 +177,7 @@ namespace OR_Mapper.Framework.Database
                 var loader = new ObjectLoader(reader);
                 var entityList = loader.LoadCollection<TEntity>();
                 conn.Close();
+                Cache.AddCollection(entityList);
                 return entityList;
             }
             catch (NpgsqlException ex)
@@ -208,6 +190,11 @@ namespace OR_Mapper.Framework.Database
         
         public static TEntity? GetById<TEntity>(int id) where TEntity : new()
         {
+            if (Cache.ExistsById(id, typeof(TEntity)))
+            {
+                return (TEntity) Cache.Get(id, typeof(TEntity));
+            }
+            
             var model = new Model(typeof(TEntity));
             var conn = Connect();
             string sql = $"SELECT * FROM {GetTableName(model.TableName)}";
@@ -223,7 +210,11 @@ namespace OR_Mapper.Framework.Database
                 var loader = new ObjectLoader(reader);
                 var entity = loader.LoadSingle<TEntity>();
                 conn.Close();
-                return entity;
+                if (entity != null)
+                {
+                    Cache.Add(entity);
+                    return entity;
+                }
             }
             catch (NpgsqlException ex)
             {
@@ -249,7 +240,7 @@ namespace OR_Mapper.Framework.Database
             return null;
         }
         
-        public static void LoadOneToOne(object record, ExternalField field) 
+        public static TCorrespondingType LoadOneToOne<TCorrespondingType>(object record, ExternalField field) where TCorrespondingType : new()
         {
             var conn = Connect();
             
@@ -288,21 +279,19 @@ namespace OR_Mapper.Framework.Database
             // Execute command
             try
             {
+                Console.WriteLine($"Executing sql: {sql}");
                 cmd.CommandText = sql;
                 var reader = cmd.ExecuteReader();
                 var loader = new ObjectLoader(reader);
-                var method = typeof(ObjectLoader)
-                    .GetMethod(nameof(ObjectLoader.LoadSingle))?
-                    .MakeGenericMethod(field.Model.Member);
-                var entity = method?.Invoke(loader, new object [] {});
+                var entity = loader.LoadSingle<TCorrespondingType>();
                 conn.Close();
+                return entity;
             }
             catch (NpgsqlException ex)
             {
                 //TODO: throw DbException;
+                throw;
             }
-            
-            throw new NotImplementedException();
         }
         
         public static void LoadManyToMany(object record, ExternalField field)

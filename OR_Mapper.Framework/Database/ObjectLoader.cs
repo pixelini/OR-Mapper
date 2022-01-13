@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
+using Npgsql.Replication.TestDecoding;
 
 namespace OR_Mapper.Framework.Database
 {
@@ -40,9 +42,9 @@ namespace OR_Mapper.Framework.Database
             return record;
         }
 
-        private void LoadRow<TEntity>(object record) where TEntity : new()
+        private void LoadRow<TEntity>(TEntity record) where TEntity : new()
         {
-            var type = record.GetType();
+            var type = typeof(TEntity);
             var model = new Model(type);
             
             foreach (var field in model.Fields)
@@ -67,11 +69,22 @@ namespace OR_Mapper.Framework.Database
                         Db.LoadManyToMany(record, field);
                         break;
                     case Relation.OneToOne:
-                        Db.LoadOneToOne(record, field);
+                        var constructLoadMethod = GetType()
+                            .GetMethod(nameof(ConstructLoadOneToOne), BindingFlags.Instance | BindingFlags.NonPublic)
+                            .MakeGenericMethod(field.Model.Member);
+                        
+                        var loadMethod = constructLoadMethod.Invoke(this, new object?[] { record, field });
+                        field.SetValue(record, loadMethod);
                         break;
+
                 }
             }
         }
 
+        private Func<TCorrespondingType> ConstructLoadOneToOne<TCorrespondingType>(object record, ExternalField field) 
+            where TCorrespondingType : new()
+        {
+            return () => Db.LoadOneToOne<TCorrespondingType>(record, field);
+        }
     }
 }

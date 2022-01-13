@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using OR_Mapper.Framework;
 
 namespace OR_Mapper.App.ObjectClasses
@@ -10,6 +11,6 @@ namespace OR_Mapper.App.ObjectClasses
         public string Name { get; set; }
         public bool IsActive { get; set; }
 
-        public Teacher Teacher { get; set; }
+        public Lazy<Teacher> Teacher { get; set; }
     }
 }
