@@ -18,6 +18,8 @@ namespace OR_Mapper.Framework.Caching
         public object Get(object id, Type type);
         
         public List<T> GetAll<T>();
+        
+        public bool HasChanged(object obj);
 
     }
 }

@@ -80,5 +80,10 @@ namespace OR_Mapper.Framework.Caching
             
             return CollectionCache[typeof(T)].Cast<T>().ToList();
         }
+
+        public bool HasChanged(object obj)
+        {
+            return true;
+        }
     }
 }

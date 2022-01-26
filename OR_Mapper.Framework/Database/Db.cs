@@ -198,9 +198,10 @@ namespace OR_Mapper.Framework.Database
             var model = new Model(typeof(TEntity));
             var conn = Connect();
             string sql = $"SELECT * FROM {GetTableName(model.TableName)}";
-            sql += $" WHERE id = {id}";
+            sql += $" WHERE id = @id";
 
             var cmd = conn.CreateCommand();
+            cmd.AddParameter("@id", id);
             
             // Execute command
             try
@@ -344,7 +345,7 @@ namespace OR_Mapper.Framework.Database
 
         }
 
-        private static string GetTableName(string tableName)
+        internal static string GetTableName(string tableName)
         {
             return DbSchema is null ? tableName : $"{DbSchema}.{tableName}";
         }

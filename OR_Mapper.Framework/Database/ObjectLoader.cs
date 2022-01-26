@@ -38,7 +38,7 @@ namespace OR_Mapper.Framework.Database
             {
                 return record;
             }
-            
+
             LoadRow<TEntity>(record);
             return record;
         }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Npgsql;
 using OR_Mapper.App.ObjectClasses;
 using OR_Mapper.Framework.Database;
+using OR_Mapper.Framework.FluentApi;
 
 namespace OR_Mapper.App
 {
@@ -64,7 +66,14 @@ namespace OR_Mapper.App
             {
                 Console.WriteLine($"My teacher (class {z.Id}) is {z.Teacher.Value.Name}!");
             }
+            
+            FluentApi.UseConnection(() => new NpgsqlConnection(Db.ConnectionString));
 
+            var mytest1 = FluentApi.Entity<Student>().Where("FirstName").Is("Maier").Execute();
+            var mytest2 = FluentApi.Entity<Student>().Where("FirstName").Is("Maier").And("Grade").Is(null).Execute();
+            var mytest3 = FluentApi.Entity<Teacher>().Max("Salary").Execute();
+            var mytest4 = FluentApi.Entity<Teacher>().Min("Salary").Execute();
+            var mytest5 = FluentApi.Entity<Teacher>().Avg("Salary").Execute();
 
             //var classWithId = Db.GetById<Class>(1);
             //var x = listOfPersons.First().Teacher.Value;

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OR_Mapper.Framework", "OR_M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OR_Mapper.App", "OR_Mapper.App\OR_Mapper.App.csproj", "{13FBAA8E-7D1B-4577-8906-75E48C57C3C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OR_Mapper.Tests", "OR_Mapper.Tests\OR_Mapper.Tests.csproj", "{977BD2A1-B9B6-47C3-90BB-5391720B14E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{13FBAA8E-7D1B-4577-8906-75E48C57C3C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13FBAA8E-7D1B-4577-8906-75E48C57C3C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13FBAA8E-7D1B-4577-8906-75E48C57C3C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{977BD2A1-B9B6-47C3-90BB-5391720B14E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{977BD2A1-B9B6-47C3-90BB-5391720B14E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{977BD2A1-B9B6-47C3-90BB-5391720B14E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{977BD2A1-B9B6-47C3-90BB-5391720B14E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

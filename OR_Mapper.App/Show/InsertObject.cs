@@ -16,8 +16,7 @@ namespace OR_Mapper.App.Show
                 FirstName = "Jerry",
                 Salary = 50000
             };
-            
-            
+
             t.Save();
         }
     }
