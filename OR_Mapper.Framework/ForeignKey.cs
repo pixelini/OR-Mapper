@@ -2,9 +2,9 @@
 {
     public class ForeignKey
     {
-        public Field LocalColumn { get; set; }
+        public Field LocalColumn { get; set; }  // fk_PersonId
         
-        public Field ForeignColumn { get; set; }
+        public Field ForeignColumn { get; set; }  // PersonId
 
         public Model ForeignTable { get; set; }
 

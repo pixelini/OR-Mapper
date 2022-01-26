@@ -254,13 +254,13 @@ namespace OR_Mapper.Framework.Database
             var fk = foreignModel.ForeignKeys.FirstOrDefault(x => x.ForeignTable.Member == mainModel.Member);
             var joinPredicate = "";
 
-            // foreign key is in other table
+            // foreign key is in current
             if (fk is null)
             {
                 fk = mainModel.ForeignKeys.First(x => x.ForeignTable.Member == foreignModel.Member);
                 joinPredicate = $"v.{foreignModel.PrimaryKey.ColumnName} = {GetTableName(mainModel.TableName)}.{fk.LocalColumn.ColumnName}";
             }
-            // foreign key is in the current table
+            // foreign key is in the other
             else
             {
                 joinPredicate = $"{GetTableName(mainModel.TableName)}.{mainModel.PrimaryKey.ColumnName} = v.{fk.LocalColumn.ColumnName}";
@@ -299,14 +299,49 @@ namespace OR_Mapper.Framework.Database
             throw new NotImplementedException();
         }
 
+        /*
         public static void LoadManyToOne(object record, ExternalField field)
         {
             throw new NotImplementedException();
         }
+        */
 
-        public static void LoadOneToMany(object record, ExternalField field)
+        public static List<TCorrespondingType> LoadOneToMany<TCorrespondingType>(object record, ExternalField field) where TCorrespondingType : new()
         {
-            return;
+            var conn = Connect();
+            
+            // Get foreign information if foreign key is in other table
+            var mainModel = new Model(record.GetType());
+            var foreignModel = field.Model;
+
+            var fields = foreignModel.Fields.Select(x => x.ColumnName);
+            var foreignKey = foreignModel.ForeignKeys.First(_ => _.ForeignTable.TableName == mainModel.TableName);
+            var fieldsString = string.Join(',', fields);
+
+            var sql = $"SELECT {fieldsString} " + 
+                           $"FROM {GetTableName(foreignModel.TableName)} " + 
+                           $"WHERE {foreignKey.LocalColumn.ColumnName} = @p0";
+            
+            var cmd = conn.CreateCommand();
+            cmd.AddParameter("@p0", mainModel.PrimaryKey.GetValue(record));
+            
+            // Execute command
+            try
+            {
+                Console.WriteLine($"Executing sql: {sql}");
+                cmd.CommandText = sql;
+                var reader = cmd.ExecuteReader();
+                var loader = new ObjectLoader(reader);
+                var entityList = loader.LoadCollection<TCorrespondingType>();
+                conn.Close();
+                return entityList;
+            }
+            catch (NpgsqlException ex)
+            {
+                //TODO: throw DbException;
+                throw;
+            }
+
         }
 
         private static string GetTableName(string tableName)

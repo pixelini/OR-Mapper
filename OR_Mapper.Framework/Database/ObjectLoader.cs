@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using Npgsql.Replication.TestDecoding;
+using OR_Mapper.Framework.Exceptions;
 
 namespace OR_Mapper.Framework.Database
 {
@@ -55,29 +56,33 @@ namespace OR_Mapper.Framework.Database
                 field.SetValue(record, value);
             }
 
+            var currentType = GetType();
+            
             foreach (var field in model.ExternalFields)
             {
-                switch (field.Relation)
+                const BindingFlags methodFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                
+                var loadMethodType = field.Relation switch
                 {
-                    case Relation.OneToMany:
-                        Db.LoadOneToMany(record, field);
-                        break;
-                    case Relation.ManyToOne:
-                        Db.LoadManyToOne(record, field);
-                        break;
-                    case Relation.ManyToMany:
-                        Db.LoadManyToMany(record, field);
-                        break;
-                    case Relation.OneToOne:
-                        var constructLoadMethod = GetType()
-                            .GetMethod(nameof(ConstructLoadOneToOne), BindingFlags.Instance | BindingFlags.NonPublic)
-                            .MakeGenericMethod(field.Model.Member);
-                        
-                        var loadMethod = constructLoadMethod.Invoke(this, new object?[] { record, field });
-                        field.SetValue(record, loadMethod);
-                        break;
+                    Relation.OneToMany => currentType?
+                        .GetMethod(nameof(ConstructLoadOneToMany), methodFlags)?
+                        .MakeGenericMethod(field.Model.Member),
+                    Relation.ManyToOne => currentType?
+                        .GetMethod(nameof(ConstructLoadOneToOne), methodFlags)?
+                        .MakeGenericMethod(field.Model.Member),
+                    Relation.ManyToMany =>
+                        // TODO: Implement many to many
+                        currentType?
+                            .GetMethod(nameof(Db.LoadManyToMany), methodFlags)?
+                            .MakeGenericMethod(field.Model.Member),
+                    Relation.OneToOne => currentType?
+                        .GetMethod(nameof(ConstructLoadOneToOne), methodFlags)?
+                        .MakeGenericMethod(field.Model.Member),
+                    _ => throw new InvalidEntityException("")
+                };
 
-                }
+                var result = loadMethodType?.Invoke(this, new object?[] { record, field });
+                field.SetValue(record, result);
             }
         }
 
@@ -85,6 +90,12 @@ namespace OR_Mapper.Framework.Database
             where TCorrespondingType : new()
         {
             return () => Db.LoadOneToOne<TCorrespondingType>(record, field);
+        }
+        
+        private Func<List<TCorrespondingType>> ConstructLoadOneToMany<TCorrespondingType>(object record, ExternalField field) 
+            where TCorrespondingType : new()
+        {
+            return () => Db.LoadOneToMany<TCorrespondingType>(record, field);
         }
     }
 }

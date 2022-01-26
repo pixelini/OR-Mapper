@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Npgsql;
 using OR_Mapper.App.ObjectClasses;
-using OR_Mapper.Framework;
 using OR_Mapper.Framework.Database;
 
 namespace OR_Mapper.App
@@ -56,9 +54,20 @@ namespace OR_Mapper.App
             //myClass.Delete();
 
             //var listOfClasses = Db.GetAll<Class>();
-            var listOfPersons = Db.GetAll<Course>();
+            var listOfPersons = Db.GetAll<Teacher>();
+
+            var teacher = listOfPersons.First();
+            var x = teacher.Classes.Value;
+            var y = teacher.Course.Value;
+
+            foreach (var z in x)
+            {
+                Console.WriteLine($"My teacher (class {z.Id}) is {z.Teacher.Value.Name}!");
+            }
+
+
             //var classWithId = Db.GetById<Class>(1);
-            var x = listOfPersons.First().Teacher.Value;
+            //var x = listOfPersons.First().Teacher.Value;
             //var model = new Model(typeof(Student));
             Console.WriteLine();
 
