@@ -11,11 +11,13 @@ namespace OR_Mapper.Framework.Database
     public class ObjectLoader
     {
         public IDataReader Reader { get; set; }
+        
+        
         public ObjectLoader(IDataReader reader)
         {
             Reader = reader;
         }
-
+        
         public List<TEntity> LoadCollection<TEntity>() where TEntity : new()
         {
             var list = new List<TEntity>();

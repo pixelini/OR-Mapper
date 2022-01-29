@@ -12,6 +12,7 @@ namespace OR_Mapper.Framework.Caching
         public Dictionary<Type, List<object>> CollectionCache { get; set; } =
             new Dictionary<Type, List<object>>();
 
+        
         public void Add(object obj)
         {
             if (SingleCache.ContainsKey(obj.GetType()))

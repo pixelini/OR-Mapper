@@ -2,21 +2,50 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework
 {
+    /// <summary>
+    /// This class holds all field metadata.
+    /// </summary>
     public class Field
     {
+        /// <summary>
+        /// Holds the property info.
+        /// </summary>
         public PropertyInfo PropertyInfo { get; set; }
         
-        // Database information
+        /// <summary>
+        /// Holds the column name.
+        /// </summary>
         public string ColumnName { get; set; }
+        
+        /// <summary>
+        /// Holds the column type.
+        /// </summary>
         public Type ColumnType { get; set; }
+        
+        /// <summary>
+        /// Describes if field is primary key.
+        /// </summary>
         public bool IsPrimaryKey { get; set; }
+        
+        /// <summary>
+        /// Describes if field is foreign key.
+        /// </summary>
         public bool IsForeignKey { get; set; }
+        
+        /// <summary>
+        /// Describes if field is discriminator field.
+        /// </summary>
         public bool IsDiscriminator { get; set; }
-
+        
+        
+        /// <summary>
+        /// Constructor for internal fields.
+        /// </summary>
+        /// <param name="propertyInfo">Property Info.</param>
+        /// <param name="model">Model.</param>
         public Field(PropertyInfo propertyInfo, Model? model)
         {
             var prefix = model is null ? string.Empty : $"{model.Member.Name}_";
@@ -28,6 +57,14 @@ namespace OR_Mapper.Framework
             IsPrimaryKey = keyAttributes.Any();
         }
 
+        /// <summary>
+        /// Constructor for external fields.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="type">Type.</param>
+        /// <param name="isPrimaryKey">Boolean that defines whether the field is a primary key field.</param>
+        /// <param name="isDiscriminator">Boolean that defines whether the field is a discriminator field.</param>
+        /// <param name="isForeignKey">Boolean that defines whether the field is a foreign key field.</param>
         public Field(string name, Type type, bool isPrimaryKey = false, bool isDiscriminator = false, bool isForeignKey = false)
         {
             ColumnName = name;
@@ -37,6 +74,11 @@ namespace OR_Mapper.Framework
             IsDiscriminator = isDiscriminator;
         }
 
+        /// <summary>
+        /// Gets the field value.
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <returns>Field value.</returns>
         public object? GetValue(object obj)
         {
             if (IsForeignKey)
@@ -57,6 +99,11 @@ namespace OR_Mapper.Framework
                 .GetValue(obj);
         }
 
+        /// <summary>
+        /// Sets the field value.
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <param name="value">Value.</param>
         public void SetValue(object obj, object value)
         {
             if (IsForeignKey || IsDiscriminator)

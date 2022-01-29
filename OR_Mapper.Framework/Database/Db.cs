@@ -18,6 +18,7 @@ namespace OR_Mapper.Framework.Database
 
         public static IDbConnection GetConnection() => new NpgsqlConnection(ConnectionString);
         
+        
         public static void Save(Entity entity)
         {
             if (!HasChanged(entity))

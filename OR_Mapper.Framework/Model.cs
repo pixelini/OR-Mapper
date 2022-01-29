@@ -8,19 +8,51 @@ using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework
 {
+    /// <summary>
+    /// This class holds all model/entity metadata.
+    /// </summary>
     public class Model
     {
+        /// <summary>
+        /// Holds the Member type.
+        /// </summary>
         public Type Member { get; set; }
+        
+        /// <summary>
+        /// Holds the table name.
+        /// </summary>
         public virtual string TableName { get; set; }
+        
+        /// <summary>
+        /// Holds all internal fields.
+        /// </summary>
         public List<Field> Fields { get; set; } = new List<Field>();
         
+        /// <summary>
+        /// Holds all external fields.
+        /// </summary>
         public List<ExternalField> ExternalFields { get; set; } = new List<ExternalField>();
         
+        /// <summary>
+        /// Holds all foreign keys.
+        /// </summary>
         public List<ForeignKey> ForeignKeys { get; set; } = new List<ForeignKey>();
+        
+        /// <summary>
+        /// Holds the primary key field.
+        /// </summary>
         public Field PrimaryKey { get; set; }
         
+        /// <summary>
+        /// Holds models.
+        /// </summary>
         private readonly List<Model> _models = new List<Model>();
 
+        
+        /// <summary>
+        /// Creates a new instance of model class.
+        /// </summary>
+        /// <param name="memberType">Member type.</param>
         public Model(Type memberType)
         {
             Member = memberType;
@@ -28,6 +60,11 @@ namespace OR_Mapper.Framework
             GetFields();
         }
 
+        /// <summary>
+        /// Creates a new instance of model class.
+        /// </summary>
+        /// <param name="memberType">Member type.</param>
+        /// <param name="models">List of models.</param>
         private Model(Type memberType, List<Model> models)
         {
             _models = models;
@@ -36,6 +73,10 @@ namespace OR_Mapper.Framework
             GetFields();
         }
 
+        /// <summary>
+        /// Gets the model fields.
+        /// </summary>
+        /// <exception cref="InvalidEntityException">InvalidEntityException.</exception>
         private void GetFields()
         {
             // Check if discriminator is needed
@@ -78,6 +119,10 @@ namespace OR_Mapper.Framework
 
         }
 
+        /// <summary>
+        /// Fills the internal fields from given type in the fields property.
+        /// </summary>
+        /// <param name="type">Type.</param>
         private void AddInternalFieldsFromType(Type type)
         {
             var internalProperties = type.GetInternalProperties();
@@ -90,6 +135,10 @@ namespace OR_Mapper.Framework
             }
         }
         
+        /// <summary>
+        /// Fills the external fields from given type in the external fields property.
+        /// </summary>
+        /// <param name="type">Type.</param>
         private void AddExternalFieldsFromType(Type type)
         {
             var externalProperties = type.GetExternalProperties();
@@ -116,6 +165,12 @@ namespace OR_Mapper.Framework
             }
         }
 
+        /// <summary>
+        /// Creates an external field from given property info of external field.
+        /// </summary>
+        /// <param name="externalProperty">External property.</param>
+        /// <returns>External field.</returns>
+        /// <exception cref="InvalidEntityException">InvalidEntityException.</exception>
         private ExternalField GetExternalField(PropertyInfo externalProperty)
         {
             // if lazy, find element type of lazy type
@@ -154,11 +209,20 @@ namespace OR_Mapper.Framework
             return new ExternalField(GetModel(type), Relation.OneToOne);
         }
 
+        /// <summary>
+        /// Checks if give type has a parent entity.
+        /// </summary>
+        /// <param name="type">Type.</param>
+        /// <returns>True if type is an inherited type.</returns>
         private bool HasParentEntity(Type type)
         {
             return type.BaseType != typeof(Entity);
         }
         
+        /// <summary>
+        /// Gets the table name for entity or inherited entity.
+        /// </summary>
+        /// <returns>Table name.</returns>
         private string GetTableName()
         {
             var baseType = Member;
@@ -169,9 +233,13 @@ namespace OR_Mapper.Framework
             }
             return baseType.Name;
         }
-
-        // if current member is already in models list (table already exists), it is returned and deleted from list
-        // if not, a new model
+        
+        /// <summary>
+        /// Gets model from given type. If current member is already in models list (table already exists),
+        /// it is returned and deleted from list. If not, a new model is created.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns>Model.</returns>
         private Model GetModel(Type type)
         {
             var model = _models.FirstOrDefault(x => x.Member == type);

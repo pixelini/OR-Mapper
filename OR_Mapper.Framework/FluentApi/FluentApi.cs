@@ -9,62 +9,24 @@ using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework.FluentApi
 {
-    public interface IBegin<T>
-    {
-        public IWhereClause<T> Where(string column);
-
-        public IMax<T> Max(string column);
-        
-        public IMin<T> Min(string column);
-
-        public IAvg<T> Avg(string column);
-
-    }
-
-    public interface IMax<T>
-    {
-        public object Execute();
-    }
-    
-    public interface IMin<T>
-    {
-        public object Execute();
-    }
-    
-    public interface IAvg<T>
-    {
-        public object Execute();
-    }
-
-    public interface IWhereClause<T>
-    {
-        public IWhere<T> Is(object? value);
-        
-        public IWhere<T> IsGreaterThan(double value);
-        
-        public IWhere<T> IsLessThan(double value);
-        
-        public IWhere<T> IsGreaterOrEqual(double value);
-        
-        public IWhere<T> IsLessOrEqual(double value);
-    }
-
-    public interface IWhere<T>
-    {
-        public IWhereClause<T> And(string column);
-
-        public List<T> Execute();
-    }
-    
+    /// <summary>
+    /// This class provides an API for building db queries in a fluent manner.
+    /// </summary>
     public class FluentApi
     {
+        /// <summary>Holds the database connection used by the framework.</summary>
         private static IDbConnection _connection;
 
+        
+        /// <summary>
+        /// Creates a new fluent API by a given db connection string.
+        /// </summary>
+        /// <param name="connectionString"></param>
         public FluentApi(string connectionString)
         {
             _connection = new NpgsqlConnection(connectionString);
         }
-
+        
         public static void UseConnection(Func<IDbConnection> funcConnection)
         {
             _connection = funcConnection();
@@ -290,4 +252,51 @@ namespace OR_Mapper.Framework.FluentApi
             }
         }
     }
+    
+    public interface IBegin<T>
+    {
+        public IWhereClause<T> Where(string column);
+
+        public IMax<T> Max(string column);
+        
+        public IMin<T> Min(string column);
+
+        public IAvg<T> Avg(string column);
+    }
+
+    public interface IMax<T>
+    {
+        public object Execute();
+    }
+    
+    public interface IMin<T>
+    {
+        public object Execute();
+    }
+    
+    public interface IAvg<T>
+    {
+        public object Execute();
+    }
+
+    public interface IWhereClause<T>
+    {
+        public IWhere<T> Is(object? value);
+        
+        public IWhere<T> IsGreaterThan(double value);
+        
+        public IWhere<T> IsLessThan(double value);
+        
+        public IWhere<T> IsGreaterOrEqual(double value);
+        
+        public IWhere<T> IsLessOrEqual(double value);
+    }
+
+    public interface IWhere<T>
+    {
+        public IWhereClause<T> And(string column);
+
+        public List<T> Execute();
+    }
+    
 }

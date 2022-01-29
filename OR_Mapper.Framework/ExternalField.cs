@@ -9,17 +9,33 @@ namespace OR_Mapper.Framework
 {
     public class ExternalField
     {
+        /// <summary>
+        /// Holds the model.
+        /// </summary>
         public Model Model { get; set; }
 
+        /// <summary>
+        /// Holds the relation.
+        /// </summary>
         public Relation Relation { get; set; }
 
 
+        /// <summary>
+        /// Creates a new external field.
+        /// </summary>
+        /// <param name="model">Model.</param>
+        /// <param name="relation">Relation.</param>
         public ExternalField(Model model, Relation relation)
         {
             Model = model;
             Relation = relation;
         }
         
+        /// <summary>
+        /// Gets the field value.
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <returns>Field value.</returns>
         public object? GetValue(object obj)
         {
             var type = obj.GetType();
@@ -46,7 +62,12 @@ namespace OR_Mapper.Framework
 
             return propertyValue;
         }
-
+        
+        /// <summary>
+        /// Sets the field value.
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <param name="value">Value.</param>
         public void SetValue(object obj, object? value)
         {
             var type = obj.GetType();

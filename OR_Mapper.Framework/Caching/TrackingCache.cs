@@ -18,6 +18,7 @@ namespace OR_Mapper.Framework.Caching
         public Dictionary<Type, Dictionary<object, string>> Hashes { get; set; } =
             new Dictionary<Type, Dictionary<object, string>>();
 
+        
         public void Add(object obj)
         {
             var hashDictionary = GetHash(obj.GetType());
@@ -122,8 +123,7 @@ namespace OR_Mapper.Framework.Caching
 
             return hashDictionary;
         }
-
-
+        
         public string CreateHash(object obj)
         {
             var hash = "";
