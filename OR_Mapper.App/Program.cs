@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Npgsql;
 using OR_Mapper.App.ObjectClasses;
+using OR_Mapper.App.Show;
 using OR_Mapper.Framework.Database;
 using OR_Mapper.Framework.FluentApi;
 
@@ -12,10 +13,23 @@ namespace OR_Mapper.App
     {
         static void Main(string[] args)
         {
+            // Configure database connection
             Db.DbSchema = "swe3_orm";
             Db.ConnectionString = "Host=localhost;Username=postgres;Password=postgres;Database=postgres";
 
-            //Db.Query("INSERT INTO swe3_orm.person (id, name) VALUES (10, 'seppi')");
+            InsertObject.Show();
+            EditObject.Show();
+
+
+            /*
+            
+            
+            
+            
+            
+            
+            
+            
 
             var listOfStudents = new List<Student>();
             var st1 = new Student();
@@ -79,6 +93,13 @@ namespace OR_Mapper.App
             //var x = listOfPersons.First().Teacher.Value;
             //var model = new Model(typeof(Student));
             Console.WriteLine();
+            
+            
+            
+            
+            
+            
+            */
 
         }
     }

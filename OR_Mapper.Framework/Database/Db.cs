@@ -122,6 +122,7 @@ namespace OR_Mapper.Framework.Database
                 cmd.CommandText = sql;
                 var pk = cmd.ExecuteScalar();
                 Cache.Add(entity);
+                Console.WriteLine("Added successfully.");
             }
             catch (NpgsqlException ex)
             {

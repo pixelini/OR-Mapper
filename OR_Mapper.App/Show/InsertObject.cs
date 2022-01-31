@@ -3,21 +3,25 @@ using OR_Mapper.App.ObjectClasses;
 
 namespace OR_Mapper.App.Show
 {
-    public class InsertObject
+    public static class InsertObject
     {
         public static void Show()
         {
             Console.WriteLine("1] Insert object");
             Console.WriteLine("---------------------------");
 
-            var t = new Teacher
+            var teacher = new Teacher
             {
                 Id = 1,
-                FirstName = "Jerry",
+                FirstName = "Hans",
+                Name = "Hansson",
+                Gender = Gender.Male,
+                BirthDate = new DateTime(2000, 1, 1),
+                HireDate = new DateTime(2020, 12, 31),
                 Salary = 50000
             };
 
-            t.Save();
+            teacher.Save();
         }
     }
 }
