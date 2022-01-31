@@ -8,16 +8,30 @@ using OR_Mapper.Framework.Exceptions;
 
 namespace OR_Mapper.Framework.Database
 {
+    /// <summary>
+    /// This class is used to load objects from different types.
+    /// </summary>
     public class ObjectLoader
     {
+        /// <summary>
+        /// Holds the data reader.
+        /// </summary>
         public IDataReader Reader { get; set; }
         
-        
+        /// <summary>
+        /// Constructs a new object loader instance.
+        /// </summary>
+        /// <param name="reader">Data reader.</param>
         public ObjectLoader(IDataReader reader)
         {
             Reader = reader;
         }
         
+        /// <summary>
+        /// Loads a collection from reader.
+        /// </summary>
+        /// <typeparam name="TEntity">Class of entity.</typeparam>
+        /// <returns>Entity result list.</returns>
         public List<TEntity> LoadCollection<TEntity>() where TEntity : new()
         {
             var list = new List<TEntity>();
@@ -32,6 +46,11 @@ namespace OR_Mapper.Framework.Database
             return list;
         }
         
+        /// <summary>
+        /// Loads a single entity from reader.
+        /// </summary>
+        /// <typeparam name="TEntity">Class of entity.</typeparam>
+        /// <returns>Result entity.</returns>
         public TEntity LoadSingle<TEntity>() where TEntity : new()
         {
             var record = new TEntity();
@@ -45,6 +64,12 @@ namespace OR_Mapper.Framework.Database
             return record;
         }
 
+        /// <summary>
+        /// Loads a row from a record.
+        /// </summary>
+        /// <param name="record">Record.</param>
+        /// <typeparam name="TEntity">Class of entity.</typeparam>
+        /// <exception cref="InvalidEntityException">InvalidEntityException.</exception>
         private void LoadRow<TEntity>(TEntity record) where TEntity : new()
         {
             var type = typeof(TEntity);
@@ -88,12 +113,24 @@ namespace OR_Mapper.Framework.Database
             }
         }
 
+        /// <summary>
+        /// Helper method for constructing OneToOne loading.
+        /// </summary>
+        /// <param name="record">Record.</param>
+        /// <param name="field">Field.</param>
+        /// <typeparam name="TCorrespondingType">Type of corresponding class.</typeparam>
         private Func<TCorrespondingType> ConstructLoadOneToOne<TCorrespondingType>(object record, ExternalField field) 
             where TCorrespondingType : new()
         {
             return () => Db.LoadOneToOne<TCorrespondingType>(record, field);
         }
         
+        /// <summary>
+        /// Helper method for constructing OneToMany loading.
+        /// </summary>
+        /// <param name="record">Record.</param>
+        /// <param name="field">Field.</param>
+        /// <typeparam name="TCorrespondingType">Type of corresponding class.</typeparam>
         private Func<List<TCorrespondingType>> ConstructLoadOneToMany<TCorrespondingType>(object record, ExternalField field) 
             where TCorrespondingType : new()
         {

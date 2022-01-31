@@ -6,6 +6,7 @@ using System.Windows.Input;
 using Npgsql;
 using OR_Mapper.Framework.Database;
 using OR_Mapper.Framework.Extensions;
+using OR_Mapper.Framework.FluentApi.Interfaces;
 
 namespace OR_Mapper.Framework.FluentApi
 {
@@ -21,30 +22,54 @@ namespace OR_Mapper.Framework.FluentApi
         /// <summary>
         /// Creates a new fluent API by a given db connection string.
         /// </summary>
-        /// <param name="connectionString"></param>
+        /// <param name="connectionString">Database connection string.</param>
         public FluentApi(string connectionString)
         {
             _connection = new NpgsqlConnection(connectionString);
         }
         
+        /// <summary>
+        /// Specifies the Db connection that should be used.
+        /// </summary>
+        /// <param name="funcConnection">Db connection string.</param>
         public static void UseConnection(Func<IDbConnection> funcConnection)
         {
             _connection = funcConnection();
         }
 
+        /// <summary>
+        /// Declares which entity type is queried.
+        /// </summary>
+        /// <typeparam name="T">Class of given entity.</typeparam>
+        /// <returns>FluentBilder object.</returns>
         public static IBegin<T> Entity<T>() where T : new()
         {
             return new FluentBuilder<T>();
         }
 
+        /// <summary>
+        /// This class is used internally to correctly assemble the query string. The interfaces that the class implement
+        /// help to create the generalised query options considering the order.
+        /// </summary>
+        /// <typeparam name="T">Class of given entity.</typeparam>
         private class FluentBuilder<T> : IBegin<T>, IWhere<T>, IWhereClause<T>, IMax<T>, IMin<T>, IAvg<T> where T : new()
         {
+            /// <summary>
+            /// Holds the Db command.
+            /// </summary>
             private IDbCommand _cmd { get; set; }
             
+            /// <summary>
+            /// Holds the sql string.
+            /// </summary>
             private string _sql { get; set; }
             
+            /// <summary>
+            /// Holds the parameter counter which is used to add parameters correctly to the Db command.
+            /// </summary>
             private int _paramCounter { get; set; }
-
+            
+            
             public IWhereClause<T> Where(string column)
             {
                 _connection.Open();
@@ -61,7 +86,7 @@ namespace OR_Mapper.Framework.FluentApi
                 _sql += column;
                 return this;
             }
-
+            
             public IMax<T> Max(string column)
             {
                 _connection.Open();
@@ -106,7 +131,7 @@ namespace OR_Mapper.Framework.FluentApi
                 _sql = $"SELECT AVG({field.ColumnName}) FROM {Db.GetTableName(model.TableName)}";
                 return this;
             }
-
+            
             public IWhereClause<T> And(string column)
             {
                 var model = new Model(typeof(T));
@@ -118,7 +143,7 @@ namespace OR_Mapper.Framework.FluentApi
                 _sql += $" AND {field.ColumnName}";
                 return this;
             }
-
+            
             public IWhere<T> Is(object? value)
             {
                 if (value is null)
@@ -134,7 +159,7 @@ namespace OR_Mapper.Framework.FluentApi
                 
                 return this;
             }
-
+            
             public IWhere<T> IsGreaterThan(double value)
             {
                 _paramCounter++;
@@ -142,7 +167,7 @@ namespace OR_Mapper.Framework.FluentApi
                 _cmd.AddParameter($"@p{_paramCounter}", value);
                 return this;
             }
-
+            
             public IWhere<T> IsLessThan(double value)
             {
                 _paramCounter++;
@@ -150,16 +175,16 @@ namespace OR_Mapper.Framework.FluentApi
                 _cmd.AddParameter($"@p{_paramCounter}", value);
                 return this;
             }
-
-            public IWhere<T> IsGreaterOrEqual(double value)
+            
+            public IWhere<T> IsGreaterOrEqualThan(double value)
             {
                 _paramCounter++;
                 _sql += $" >= @p{_paramCounter}";
                 _cmd.AddParameter($"@p{_paramCounter}", value);
                 return this;
             }
-
-            public IWhere<T> IsLessOrEqual(double value)
+            
+            public IWhere<T> IsLessOrEqualThan(double value)
             {
                 _paramCounter++;
                 _sql += $" <= @p{_paramCounter}";
@@ -187,7 +212,7 @@ namespace OR_Mapper.Framework.FluentApi
                     throw;
                 }
             }
-
+            
             object IMax<T>.Execute()
             {
                 // Execute command
@@ -252,51 +277,5 @@ namespace OR_Mapper.Framework.FluentApi
             }
         }
     }
-    
-    public interface IBegin<T>
-    {
-        public IWhereClause<T> Where(string column);
 
-        public IMax<T> Max(string column);
-        
-        public IMin<T> Min(string column);
-
-        public IAvg<T> Avg(string column);
-    }
-
-    public interface IMax<T>
-    {
-        public object Execute();
-    }
-    
-    public interface IMin<T>
-    {
-        public object Execute();
-    }
-    
-    public interface IAvg<T>
-    {
-        public object Execute();
-    }
-
-    public interface IWhereClause<T>
-    {
-        public IWhere<T> Is(object? value);
-        
-        public IWhere<T> IsGreaterThan(double value);
-        
-        public IWhere<T> IsLessThan(double value);
-        
-        public IWhere<T> IsGreaterOrEqual(double value);
-        
-        public IWhere<T> IsLessOrEqual(double value);
-    }
-
-    public interface IWhere<T>
-    {
-        public IWhereClause<T> And(string column);
-
-        public List<T> Execute();
-    }
-    
 }

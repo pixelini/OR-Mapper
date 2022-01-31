@@ -8,17 +8,37 @@ using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework.Database
 {
+    /// <summary>
+    /// This class contains all Db related information.
+    /// </summary>
     public static class Db
     {
+        /// <summary>
+        /// Holds the Db connection string.
+        /// </summary>
         public static string? ConnectionString;
 
+        /// <summary>
+        /// Holds the Db schema name.
+        /// </summary>
         public static string? DbSchema { get; set; }
 
+        /// <summary>
+        /// Holds the cache.
+        /// </summary>
         public static ICache Cache { get; set; } = new Cache();
 
+        /// <summary>
+        /// Gets the Db connection.
+        /// </summary>
+        /// <returns>Connection.</returns>
         public static IDbConnection GetConnection() => new NpgsqlConnection(ConnectionString);
         
         
+        /// <summary>
+        /// Saves given entity in Db (insert or update if it already exists).
+        /// </summary>
+        /// <param name="entity">Entity.</param>
         public static void Save(Entity entity)
         {
             if (!HasChanged(entity))
@@ -110,6 +130,11 @@ namespace OR_Mapper.Framework.Database
             conn.Close();
         }
 
+        /// <summary>
+        /// Checks if entity has changed.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <returns>True if entity has changed.</returns>
         private static bool HasChanged(Entity entity)
         {
             var type = entity.GetType();
@@ -127,6 +152,10 @@ namespace OR_Mapper.Framework.Database
             return cachedEntity.GetHashCode() != entity.GetHashCode();
         }
 
+        /// <summary>
+        /// Deletes given entity from Db.
+        /// </summary>
+        /// <param name="entity"></param>
         public static void Delete(Entity entity)
         {
             var conn = Connect();
@@ -156,6 +185,11 @@ namespace OR_Mapper.Framework.Database
             conn.Close();
         }
 
+        /// <summary>
+        /// Gets all objects of specified class from database.
+        /// </summary>
+        /// <typeparam name="TEntity">Class of entity.</typeparam>
+        /// <returns>Queried objects.</returns>
         public static List<TEntity> GetAll<TEntity>() where TEntity : class, new()
         {
             var cache = Cache.GetAll<TEntity>();
@@ -189,6 +223,12 @@ namespace OR_Mapper.Framework.Database
             return null;
         }
         
+        /// <summary>
+        /// Gets object by given id of specified class from database.
+        /// </summary>
+        /// <param name="id">Id.</param>
+        /// <typeparam name="TEntity">Class of entity.</typeparam>
+        /// <returns>Queried object.</returns>
         public static TEntity? GetById<TEntity>(int id) where TEntity : new()
         {
             if (Cache.ExistsById(id, typeof(TEntity)))
@@ -226,6 +266,10 @@ namespace OR_Mapper.Framework.Database
             return new TEntity();
         }
         
+        /// <summary>
+        /// Helper method for connecting to db.
+        /// </summary>
+        /// <returns></returns>
         private static IDbConnection Connect()
         {
             try
@@ -242,6 +286,13 @@ namespace OR_Mapper.Framework.Database
             return null;
         }
         
+        /// <summary>
+        /// Loads objects that are in a one to one relation. Also used for many to one relations.
+        /// </summary>
+        /// <param name="record">Record.</param>
+        /// <param name="field">Field.</param>
+        /// <typeparam name="TCorrespondingType">Type of corresponding class.</typeparam>
+        /// <returns>Corresponding object.</returns>
         public static TCorrespondingType LoadOneToOne<TCorrespondingType>(object record, ExternalField field) where TCorrespondingType : new()
         {
             var conn = Connect();
@@ -295,19 +346,25 @@ namespace OR_Mapper.Framework.Database
                 throw;
             }
         }
-        
+
+        /// <summary>
+        /// Loads objects that are in a many to many relation.
+        /// </summary>
+        /// <param name="record">Record.</param>
+        /// <param name="field">Field.</param>
+        /// <exception cref="NotImplementedException">NotImplementedException.</exception>
         public static void LoadManyToMany(object record, ExternalField field)
         {
             throw new NotImplementedException();
         }
 
-        /*
-        public static void LoadManyToOne(object record, ExternalField field)
-        {
-            throw new NotImplementedException();
-        }
-        */
-
+        /// <summary>
+        /// Loads objects that are in a one to many relation.
+        /// </summary>
+        /// <param name="record">Record.</param>
+        /// <param name="field">Field.</param>
+        /// <typeparam name="TCorrespondingType">Type of corresponding class.</typeparam>
+        /// <returns>Corresponding object.</returns>
         public static List<TCorrespondingType> LoadOneToMany<TCorrespondingType>(object record, ExternalField field) where TCorrespondingType : new()
         {
             var conn = Connect();
@@ -346,6 +403,11 @@ namespace OR_Mapper.Framework.Database
 
         }
 
+        /// <summary>
+        /// Gets the correct table name including the db schema if needed.
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
         internal static string GetTableName(string tableName)
         {
             return DbSchema is null ? tableName : $"{DbSchema}.{tableName}";
