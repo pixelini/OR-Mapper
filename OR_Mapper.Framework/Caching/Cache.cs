@@ -38,7 +38,6 @@ namespace OR_Mapper.Framework.Caching
             if (CollectionCache.ContainsKey(typeof(T)))
             {
                 CollectionCache[typeof(T)] = all.OfType<object>().ToList();
-                
             }
             else
             {

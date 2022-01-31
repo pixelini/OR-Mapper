@@ -10,7 +10,7 @@ namespace OR_Mapper.App.Show
         public static void Show()
         {
             Console.WriteLine();
-            Console.WriteLine("5] Lazy Loading");
+            Console.WriteLine("6] Lazy Loading");
             Console.WriteLine("---------------------------");
 
             var listOfPersons = Db.GetAll<Teacher>();

@@ -22,6 +22,7 @@ namespace OR_Mapper.App
             
             InsertObject.Show();
             EditObject.Show();
+            DeleteObject.Show();
             WithFk.Show();
             WithFkList.Show();
             LazyLoading.Show();

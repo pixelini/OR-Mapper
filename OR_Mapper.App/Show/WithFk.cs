@@ -10,7 +10,7 @@ namespace OR_Mapper.App.Show
         public static void Show()
         {
             Console.WriteLine();
-            Console.WriteLine("3] Create and load an object with foreign key");
+            Console.WriteLine("4] Create and load an object with foreign key");
             Console.WriteLine("---------------------------");
 
             var myTeacher = Db.GetById<Teacher>(1);

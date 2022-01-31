@@ -9,7 +9,7 @@ namespace OR_Mapper.App.Show
         public static void Show()
         {
             Console.WriteLine();
-            Console.WriteLine("4] Load teacher and show classes");
+            Console.WriteLine("5] Load teacher and show classes");
             Console.WriteLine("---------------------------");
 
             var myTeacher = Db.GetById<Teacher>(1);

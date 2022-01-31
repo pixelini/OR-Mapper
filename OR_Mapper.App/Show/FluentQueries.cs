@@ -12,7 +12,7 @@ namespace OR_Mapper.App.Show
         public static void Show()
         {
             Console.WriteLine();
-            Console.WriteLine("6] Fluent Queries");
+            Console.WriteLine("7] Fluent Queries");
             Console.WriteLine("---------------------------");
             
             FluentApi.UseConnection(() => new NpgsqlConnection(Db.ConnectionString));
