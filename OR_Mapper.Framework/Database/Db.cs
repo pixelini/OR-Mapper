@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using Npgsql;
 using OR_Mapper.Framework.Caching;
+using OR_Mapper.Framework.Exceptions;
 using OR_Mapper.Framework.Extensions;
 
 namespace OR_Mapper.Framework.Database
@@ -124,7 +125,7 @@ namespace OR_Mapper.Framework.Database
             }
             catch (NpgsqlException ex)
             {
-                //TODO: throw DbException;
+                throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
             }
 
             conn.Close();
@@ -179,7 +180,7 @@ namespace OR_Mapper.Framework.Database
             }
             catch (NpgsqlException ex)
             {
-                //TODO: throw DbException;
+                throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
             }
 
             conn.Close();
@@ -217,7 +218,7 @@ namespace OR_Mapper.Framework.Database
             }
             catch (NpgsqlException ex)
             {
-                //TODO: throw DbException;
+                throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
             }
             
             return null;
@@ -260,7 +261,7 @@ namespace OR_Mapper.Framework.Database
             }
             catch (NpgsqlException ex)
             {
-                //TODO: throw DbException;
+                throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
             }
             
             return new TEntity();
@@ -280,7 +281,7 @@ namespace OR_Mapper.Framework.Database
             }
             catch (NpgsqlException ex)
             {
-                //TODO: throw DbException;
+                throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
             }
 
             return null;
@@ -342,8 +343,7 @@ namespace OR_Mapper.Framework.Database
             }
             catch (NpgsqlException ex)
             {
-                //TODO: throw DbException;
-                throw;
+                throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
             }
         }
 
@@ -355,7 +355,7 @@ namespace OR_Mapper.Framework.Database
         /// <exception cref="NotImplementedException">NotImplementedException.</exception>
         public static void LoadManyToMany(object record, ExternalField field)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -397,8 +397,7 @@ namespace OR_Mapper.Framework.Database
             }
             catch (NpgsqlException ex)
             {
-                //TODO: throw DbException;
-                throw;
+                throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
             }
 
         }
@@ -414,4 +413,5 @@ namespace OR_Mapper.Framework.Database
         }
 
     }
+    
 }

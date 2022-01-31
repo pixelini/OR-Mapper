@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Windows.Input;
 using Npgsql;
 using OR_Mapper.Framework.Database;
+using OR_Mapper.Framework.Exceptions;
 using OR_Mapper.Framework.Extensions;
 using OR_Mapper.Framework.FluentApi.Interfaces;
 
@@ -80,7 +80,7 @@ namespace OR_Mapper.Framework.FluentApi
                 var field = model.Fields.FirstOrDefault(x => (x.PropertyInfo?.Name ?? x.ColumnName).ToLower() == column.ToLower());
                 if (field is null)
                 {
-                    //TODO: throw ColumnNotFoundException();
+                    throw new ColumnNotFoundException("Column could not be found.");
                 }
 
                 _sql += column;
@@ -95,7 +95,7 @@ namespace OR_Mapper.Framework.FluentApi
                 var field = model.Fields.FirstOrDefault(x => (x.PropertyInfo?.Name ?? x.ColumnName).ToLower() == column.ToLower());
                 if (field is null)
                 {
-                    //TODO: throw ColumnNotFoundException();
+                    throw new ColumnNotFoundException("Column could not be found.");
                 }
                 
                 _sql = $"SELECT MAX({field.ColumnName}) FROM {Db.GetTableName(model.TableName)}";
@@ -110,7 +110,7 @@ namespace OR_Mapper.Framework.FluentApi
                 var field = model.Fields.FirstOrDefault(x => (x.PropertyInfo?.Name ?? x.ColumnName).ToLower() == column.ToLower());
                 if (field is null)
                 {
-                    //TODO: throw ColumnNotFoundException();
+                    throw new ColumnNotFoundException("Column could not be found.");
                 }
                 
                 _sql = $"SELECT MIN({field.ColumnName}) FROM {Db.GetTableName(model.TableName)}";
@@ -125,7 +125,7 @@ namespace OR_Mapper.Framework.FluentApi
                 var field = model.Fields.FirstOrDefault(x => (x.PropertyInfo?.Name ?? x.ColumnName).ToLower() == column.ToLower());
                 if (field is null)
                 {
-                    //TODO: throw ColumnNotFoundException();
+                    throw new ColumnNotFoundException("Column could not be found.");
                 }
                 
                 _sql = $"SELECT AVG({field.ColumnName}) FROM {Db.GetTableName(model.TableName)}";
@@ -138,7 +138,7 @@ namespace OR_Mapper.Framework.FluentApi
                 var field = model.Fields.FirstOrDefault(x => (x.PropertyInfo?.Name ?? x.ColumnName).ToLower() == column.ToLower());
                 if (field is null)
                 {
-                    //TODO: throw ColumnNotFoundException();
+                    throw new ColumnNotFoundException("Column could not be found.");
                 }
                 _sql += $" AND {field.ColumnName}";
                 return this;
@@ -208,8 +208,7 @@ namespace OR_Mapper.Framework.FluentApi
                 }
                 catch (NpgsqlException ex)
                 {
-                    //TODO: throw DbException;
-                    throw;
+                    throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
                 }
             }
             
@@ -229,8 +228,7 @@ namespace OR_Mapper.Framework.FluentApi
                 }
                 catch (NpgsqlException ex)
                 {
-                    //TODO: throw DbException;
-                    throw;
+                    throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
                 }
             }
             
@@ -250,8 +248,7 @@ namespace OR_Mapper.Framework.FluentApi
                 }
                 catch (NpgsqlException ex)
                 {
-                    //TODO: throw DbException;
-                    throw;
+                    throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
                 }
             }
             
@@ -271,8 +268,7 @@ namespace OR_Mapper.Framework.FluentApi
                 }
                 catch (NpgsqlException ex)
                 {
-                    //TODO: throw DbException;
-                    throw;
+                    throw new DatabaseException("A database error occurred, see inner exception for details.", ex);
                 }
             }
         }
