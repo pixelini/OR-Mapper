@@ -28,17 +28,17 @@ namespace OR_Mapper.Framework.Caching
             {
                 var model = new Model(type);
                 var pk = model.PrimaryKey.GetValue(obj);
-                SingleCache[type].Add(pk, obj);
+                SingleCache[type][pk] = obj;
                 hashDictionary.Add(pk, CreateHash(obj));
             }
             else
             {
                 var objects = new Dictionary<object, object>();
-                SingleCache.Add(type, objects);
+                SingleCache[type] = objects;
                 
                 var model = new Model(type);
                 var pk = model.PrimaryKey.GetValue(obj);
-                SingleCache[type].Add(pk, obj);
+                SingleCache[type][pk] = obj;
                 hashDictionary.Add(pk, CreateHash(obj));
             }
         }
@@ -47,14 +47,14 @@ namespace OR_Mapper.Framework.Caching
         {
             if (CollectionCache.ContainsKey(typeof(T)))
             {
-                CollectionCache[typeof(T)].AddRange(all);
+                CollectionCache[typeof(T)] = all.OfType<object>().ToList();
             }
             else
             {
                 var collection = new List<object>();
-                CollectionCache.Add(typeof(T), collection);
-                
-                CollectionCache[typeof(T)].AddRange(all);
+                CollectionCache[typeof(T)] = collection;
+
+                CollectionCache[typeof(T)] = all.OfType<object>().ToList();
             }
         }
 

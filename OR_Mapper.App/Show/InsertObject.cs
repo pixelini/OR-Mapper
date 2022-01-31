@@ -7,6 +7,7 @@ namespace OR_Mapper.App.Show
     {
         public static void Show()
         {
+            Console.WriteLine();
             Console.WriteLine("1] Insert object");
             Console.WriteLine("---------------------------");
 

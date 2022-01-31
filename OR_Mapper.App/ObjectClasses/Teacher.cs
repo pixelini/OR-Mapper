@@ -9,7 +9,7 @@ namespace OR_Mapper.App.ObjectClasses
         
         public DateTime HireDate { get; set; }
 
-        public Lazy<List<Class>> Classes { get; private set; } = new Lazy<List<Class>>();
+        public Lazy<List<Class>> Classes { get; set; } = new Lazy<List<Class>>();
 
         public Lazy<Course> Course { get; set; }
     }

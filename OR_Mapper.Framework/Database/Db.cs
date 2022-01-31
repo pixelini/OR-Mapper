@@ -42,7 +42,7 @@ namespace OR_Mapper.Framework.Database
         /// <param name="entity">Entity.</param>
         public static void Save(Entity entity)
         {
-            if (!HasChanged(entity))
+            if (!Cache.HasChanged(entity))
             {
                 return;
             }
@@ -120,6 +120,7 @@ namespace OR_Mapper.Framework.Database
             try
             {
                 cmd.CommandText = sql;
+                Console.WriteLine(sql);
                 var pk = cmd.ExecuteScalar();
                 Cache.Add(entity);
                 Console.WriteLine("Added successfully.");
@@ -130,28 +131,6 @@ namespace OR_Mapper.Framework.Database
             }
 
             conn.Close();
-        }
-
-        /// <summary>
-        /// Checks if entity has changed.
-        /// </summary>
-        /// <param name="entity">Entity.</param>
-        /// <returns>True if entity has changed.</returns>
-        private static bool HasChanged(Entity entity)
-        {
-            var type = entity.GetType();
-            var model = new Model(type);
-            var pk = model.PrimaryKey.GetValue(entity);
-
-            // if the primary key is null, the object is definitely not stored in cache
-            // therefore, it should be treated as if it was changed
-            if (pk is null)
-            {
-                return true;
-            }
-            
-            var cachedEntity = Cache.Get(pk, entity.GetType());
-            return cachedEntity.GetHashCode() != entity.GetHashCode();
         }
 
         /// <summary>
