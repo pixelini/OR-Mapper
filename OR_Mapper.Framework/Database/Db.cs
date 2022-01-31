@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 using Npgsql;
 using OR_Mapper.Framework.Caching;
 using OR_Mapper.Framework.Exceptions;
