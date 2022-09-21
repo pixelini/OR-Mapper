@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Npgsql;
-using OR_Mapper.App.ObjectClasses;
 using OR_Mapper.App.Show;
 using OR_Mapper.Framework.Database;
-using OR_Mapper.Framework.FluentApi;
 
 namespace OR_Mapper.App
 {
